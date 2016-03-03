@@ -5,28 +5,31 @@ import sbt.Keys._
 import complete.DefaultParsers._
 
 object GilescSbt extends sbt.AutoPlugin {
+  lazy val BehaviorTest = config("bt") extend(Test)
+
   val commonSettings = Seq(
-    organization := "com.gilesc"
-  // Scalaform.scalaformSettings
+    // Organization Settings
+    organization := "com.gilesc",
+    version := "0.0.1",
+    scalaVersion := "2.11.7",
+
+    // Scalaform Settings
+    ScalaFormatter.settings
   )
 
-  def createProject(name: String) = {
+  lazy val rootProject = (project in file(".")).
+    configs(IntegrationTest).
+    configs(BehaviorTest).
+    settings(inConfig(BehaviorTest)(Defaults.testSettings) : _*).
+    settings(inConfig(IntegrationTest)(Defaults.itSettings) : _*).
+    settings(commonSettings: _*)
+
+  def createSubProject(name: String) = {
     Project(name, file(name)).
-      settings(commonSettings: _*)
+    configs(IntegrationTest).
+    configs(BehaviorTest).
+    settings(inConfig(BehaviorTest)(Defaults.testSettings) : _*).
+    settings(inConfig(IntegrationTest)(Defaults.itSettings) : _*).
+    settings(commonSettings: _*)
   }
-
-  // import autoImport._
-
-  // override def projectSettings = Seq(
-  //   extTask := {
-  //     val args: Seq[String] = spaceDelimited("<arg>").parsed
-  //     streams.value.log.info("Hello depend " + args.mkString(","))
-  //   }
-  // )
-
-  // override def trigger = Plugins.allRequirements
-
-  // object autoImport {
-  //   lazy val extTask = InputKey[Unit]("depend", "Prints hello.")
-  // }
 }
